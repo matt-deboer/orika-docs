@@ -3,8 +3,8 @@ layout: default
 title: Orika reference guide
 ---
       <div class="hero-unit">
-        <h1>Orika Tutorial</h1>
-        <p>simpler, lighter and faster Java bean mapping</p>
+        <h2>Orika <em><small>simpler, lighter and faster Java bean mapping</small></em></h2>
+        <h1>User Guide</h1>
       </div>
 
       <!-- Example row of columns -->
@@ -13,8 +13,8 @@ title: Orika reference guide
 
 		 <div class="alert alert-block">
 		  <h4>Important!</h4>
-		  <p>This guide is not yet complete, if you have any suggestion or 
-			question feel free to <a href="http://code.google.com/p/orika">get in touch</a></p>
+		  <p>This guide is (like Orika) a work in progress; any feedback in the way of suggestions or 
+			questions or problems can be posted to our project issues site, currently hosted at <a href="http://code.google.com/p/orika/issues/list">Google Code</a></p>
 		 </div>
 
           <h2>About</h2>
@@ -22,32 +22,30 @@ title: Orika reference guide
           As  developers we have to provide solutions to business problems, and we want to use the time in our disposition to do what really matter.
  		  In our days, enterprise applications became more and more complex, with a lot of architecture  and design constrains. <br>  Design constraints 
           that will produce a considerable amount of mechanical work.
-          A lot of <bold>Open Source</bold> projects put in our hands some great tools to face such        
-          complexity, such <em>Spring, Guice, Hibernate, Wicket, ...</em> and we have a lot of choice to pick the right tool to get the 
-          job done. However with all of these layers none of these frameworks solve a common problem, present in all Java/JEE applications:   
-          <bold>mapping</bold>. 
+          A lot of <bold>Open Source</bold> projects put in our hands some great tools to face such complexity, such <em>Spring, Guice, Hibernate, Wicket, ...</em> and we have a lot of options available to solve each particular part of the overall problem. 
+          However, with all of these different tools/frameworks/libraries, it is common to find that we need to convert objects into different formats to accommodate different APIs, or we may even need to convert formats between different architectural layers
+          of our own for design reasons; to accomplish this, we are left to the rather boring task of writing mapping code to copy the values from one type to another. 
           </p>
 
 		 <p>
-			Mapping code needed to copy data from one object to another, this code can reach a considerable weight, almost time it's mechanical (boring) work, and in the other side consume a huge effort of writing, testing and bugs fixing.
+			In a medium to large project, such mapping code can reach a considerable effort of mechanical (boring) work which can be difficult to maintain, test, and debug.
 		 </p>
 
           <h2>Approach</h2>
-          <p>Orika will do for you the boring work, without tradeoff on performance</p>
-          <p>Orika can automatically collect informations about your classes, and generate mappers which can be used together to do copy data from objects to objects, recursively. Orika provide a lot of feature while keeping it simple and open and giving you the possibility to adapt it to fit your needs.</p>
+          <p>Orika attempts to perform this tedious work for you, with little measurable tradeoff on performance</p>
+          <p>It will automatically collect meta-data of your classes to generate mapping objects which can be used together to copy data from one object graph to another, recursively. Orika attempts to provide many convenient features while remaining relatively simple and open -- giving you the possibility to extend and adapt it to fit your needs.</p>
 
           <h2>Also</h2>
-          <p>Orika want you !<br>
-			Any kind of contribution could help project are welcomed, feature request, bug report, tests, blog post what ever is welcomed.
-          
-			</p>
+          <p>We could use your help!<br>
+			Most all kinds of contribution are welcomed; feature requests, patches, bug reports, test cases, benchmarks, blog posts, and stories of how Orika helped you (or even where it could have been more helpful)-- all are welcomed.
+          </p>
         </div>
         
         <div class="span5">
-          <h2>Lessons</h2>
+          <h2>Topics</h2>
             <dl>
               {% for post in site.posts reversed %}
-                <dt><a href="{{post.url}}">{{post.title}}</a></dt>
+                <dt><a href=".{{post.url}}">{{post.title}}</a></dt>
                 <dd>{{post.desc}}</dd>
               
               {% endfor %}
