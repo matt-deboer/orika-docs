@@ -1,0 +1,31 @@
+---
+layout: post
+id: objectfactories-mappers-converters
+title: Converts, Mappers, and ObjctFactories
+desc: when to choose one over the others
+---
+
+h3. What's the difference?
+
+*ObjectFactory* defines types which are used for constructing instances of particular objects.
+
+*Mapper* defines types which are used to copy data from one object instance to another.
+
+*Converter* defines types which combine both _ObjectFactory_ and _Mapper_ together, returning a new instance of
+ of the destination type which has been converted from a source instance 
+
+h3. When to use a Converter
+
+It makes sense to use a Converter for most cases where you find that Orika doesn't handle mapping an instance of a source object into a specific destination type. A custom converter (defined by extending *CustomConverter<A,B>*) returns a new, fully mapped instance of a specific destination type from a source type instance. Use this for cases where you plan to call <code>Destination result = mapperFacade.map(object1, Destination.class)</code>, and the default mapping behavior configured via the ClassMapBuilder API doesn't suit your purposes.
+
+h3. When to use a Mapper
+
+Similar to a custom converter, a custom mapper (defined by extending *CustomMapper<A,B>*) can be used to explictly control how properties of one object instance are copied to another (already existing) object instance. Use this for cases where you plan to call <code>mapperFacade.map(object1, object2)</code>, and the default mapping behavior configured via the ClassMapBuilder API doesn't suit your purposes.
+
+h3. When to use an ObjectFactory
+
+It makes most sense to define a custom *ObjectFactory<T>* when there's a special way that your destination
+object needs to be instantiated (other than through a normal constructor call), or if Orika doesn't seem
+to use the constructor you expected when creating your object.
+
+ 

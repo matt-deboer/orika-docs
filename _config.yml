@@ -1,0 +1,4 @@
+source: ./web
+destination: ./_site
+google_prettify: true
+permalink: none

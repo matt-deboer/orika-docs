@@ -1,0 +1,73 @@
+---
+layout: post
+id: intro
+title: Introduction
+desc: getting started with Orika
+---
+
+h2. Getting Started
+
+h4. Installation
+
+To make use of Orika within your project, simply add the maven dependency (available from Maven central), like so:
+_Please verify the latest version_
+
+<pre class="prettyprint linenums">
+<dependency>
+   <groupId>ma.glasnost.orika</groupId>
+   <artifactId>orika-core</artifactId>
+   <version>1.3.6</version><!-- or latest version -->
+</dependency>
+</pre>
+
+If you do not use maven, please see the [Downloads] section for the latest downloads. Note that Orika has dependencies on the following libraries, for which you'll need to obtain binaries:
+* javassist (v 3.12.0+)
+* slf4j (v 1.5.6+)
+* paranamer (v 2.0+)
+
+h4. Usage
+
+<div class="alert alert-block">
+  <p>If you got to this point, you already know that you have some instances of one type for which you want to convert to an instance of some other type. The types aren't in the same object hierarchy (otherwise, you'd likely just use a cast!), but they represent the same data.</p>
+</div>
+
+
+The basic cornerstone of the Orika mapping framework is the MapperFactory class. This is the class which you will use to configure any mappings, and obtain the MapperFacade which performs the actual mapping work. A very basic example is given below:
+
+h5. Construct a MapperFactory
+
+<pre class="prettyprint linenums">
+MapperFactory mapperFactory = new DefaultMapperFactory.Builder().build();
+</pre>
+
+h5. Register field mappings, converters, custom mappers, concrete types, etc.
+
+Once you've constructed the MapperFactory instance, you can use it to register any field mappings for the classes you'd like to map, register converters, custom mappers, concrete types to be used for abstract/interface types, and finally, obtain a MapperFacade instance which will be used to perform the actual mapping work. If the types you want to map have properties with matching names, you may not need to register any mappings at all. 
+
+Assuming that you have some fields of some types that you'd like to map which don't have matching names, this can be resolved by registering a mapping for the fields on thoese types using the ClassMapBuilder API. This API can be leveraged by using the *classMap(typeA, typeB)* method on A basic example is given below:
+
+<pre class="prettyprint linenums">
+mapperFactory.classMap(PersonSource.class, PersonDestination.class)
+   .field("firstName", "givenName")
+   .field("lastName", "sirName")
+   .byDefault()
+   .register();
+</pre>
+
+What did we do here? We created a new ClassMapBuilder instance by calling the *classMap* method on mapperFactory, then we used the *field(fieldA, fieldB)* method to specify that the 'firstName' field on _PersonSource_ should be mapped to the 'givenName' field on _PersonDestination_ and likewise for mapping 'lastName' to 'sirName'; then we used the *byDefault()* method to specify that the remaining fields on both classes should be mapped 'byDefault', which maps all fields with matching names from the two classes. Finally, we used the *register()* method to register the mapping with the MapperFactory.
+
+We can get to the specifics of registering mappings <a href="mappings-via-classmapbuilder.html">here</a>, but for now, let's look at obtaining and using the MapperFacade to map some classes, with the basic example below:
+
+h5. Map objects using the MapperFacade
+
+<pre class="prettyprint linenums">
+MapperFacade mapper = mapperFactory.getMapperFacade();
+
+PersonSource source = new PersonSource();
+// set some field values
+...
+// map the fields of 'source' onto a new instance of PersonDest
+PersonDest destination = mapper.map(source, PersonDest.class);
+</pre>
+
+Mappings can also be performed in-place, by using the *map(objectA, objectB)* method on MapperFacade.

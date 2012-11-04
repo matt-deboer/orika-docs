@@ -1,0 +1,60 @@
+---
+layout: default
+title: Orika reference guide
+---
+      <div class="hero-unit">
+        <h1>Orika Tutorial</h1>
+        <p>simpler, lighter and faster Java bean mapping</p>
+      </div>
+
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="span7">
+
+		 <div class="alert alert-block">
+		  <h4>Important!</h4>
+		  <p>This guide is not yet complete, if you have any suggestion or 
+			question feel free to <a href="http://code.google.com/p/orika">get in touch</a></p>
+		 </div>
+
+          <h2>About</h2>
+          <p>
+          As  developers we have to provide solutions to business problems, and we want to use the time in our disposition to do what really matter.
+ 		  In our days, enterprise applications became more and more complex, with a lot of architecture  and design constrains. <br>  Design constraints 
+          that will produce a considerable amount of mechanical work.
+          A lot of <bold>Open Source</bold> projects put in our hands some great tools to face such        
+          complexity, such <em>Spring, Guice, Hibernate, Wicket, ...</em> and we have a lot of choice to pick the right tool to get the 
+          job done. However with all of these layers none of these frameworks solve a common problem, present in all Java/JEE applications:   
+          <bold>mapping</bold>. 
+          </p>
+
+		 <p>
+			Mapping code needed to copy data from one object to another, this code can reach a considerable weight, almost time it's mechanical (boring) work, and in the other side consume a huge effort of writing, testing and bugs fixing.
+		 </p>
+
+          <h2>Approach</h2>
+          <p>Orika will do for you the boring work, without tradeoff on performance</p>
+          <p>Orika can automatically collect informations about your classes, and generate mappers which can be used together to do copy data from objects to objects, recursively. Orika provide a lot of feature while keeping it simple and open and giving you the possibility to adapt it to fit your needs.</p>
+
+          <h2>Also</h2>
+          <p>Orika want you !<br>
+			Any kind of contribution could help project are welcomed, feature request, bug report, tests, blog post what ever is welcomed.
+          
+			</p>
+        </div>
+        
+        <div class="span5">
+          <h2>Lessons</h2>
+            <dl>
+              {% for post in site.posts reversed %}
+                <dt><a href="{{post.url}}">{{post.title}}</a></dt>
+                <dd>{{post.desc}}</dd>
+              
+              {% endfor %}
+            
+            </dl>
+       </div>
+      </div>
+    </div> <!-- /container -->
+  </body>
+</html>

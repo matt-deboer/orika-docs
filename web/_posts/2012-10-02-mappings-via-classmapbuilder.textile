@@ -1,0 +1,193 @@
+---
+layout: post
+id: classmap-builder
+title: Declarative Mapping Configuration
+desc: using the fluent-style ClassMapBuilder API
+---
+
+h2. Overview
+
+Orika uses a declarative Java-based configuration of mappings from one class to another, whereby you define which fields from one type need to be matched up with which fields from another using a fluent-style API.
+
+For many cases, Orika can properly generate a suitable mapper using just the names of the fields you provide--by investigating their respective types using reflection. If the names of the fields you need to map match, you don't even need to explicitly declare them.
+
+h2. The ClassMapBuilder API
+
+A ClassMapBuilder is obtained by calling the *_(big)classMap(aType, bType)_* method on a MapperFactory instance. It's best to start with an example -- suppose we have some instances of class *BasicPerson* that we'd like to map to instances of another class *BasicPersonDto*, defined like so:
+
+<pre class="prettyprint">
+class BasicPerson {
+  private String name;
+  private int age;
+  private Date birthDate;
+  // getters/setters omitted
+}
+class BasicPersonDto { 
+  private String fullName;
+  private int currentAge;
+  private Date birthDate;
+  // getters/setters omitted
+}
+</pre>
+
+In order to map between these classes, we'll need to first register a ClassMap for the two types, which is created like so:
+
+<pre class="prettyprint">
+  mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
+  	.field("name", "fullName")
+  	.field("age", "currentAge")
+  	.register();
+</pre>
+
+h4. Mapping fields by default
+
+In the case where one or more fields in the two types being mapped have matching names, the *byDefault* method can be used, like so:
+
+<pre class="prettyprint">
+  mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
+  	.field("name", "fullName")
+  	.field("age", "currentAge")
+  	.byDefault()
+  	.register();
+</pre>
+
+
+h4. Mapping fields in one direction only
+
+By default, a field mapping added using the *field(nameA, nameB)* method is bi-directional. To declare a field mapping that is only used in a single direction, use one of the *fieldAToB* or *fieldBToA* methods, like so:
+
+<pre class="prettyprint">
+  mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
+  	.fieldAToB("name", "fullName")
+  	...
+  	.register();
+</pre>
+
+_This would result in the 'name' field of BasicPerson being copied to the 'fullName' field of BasicPersonDto, but does not include mapping 'fullName' to 'name' when mapping is in the other direction._
+
+
+h4. Excluding a field from mapping
+
+To explicitly exclude a field from mapping, use the *exclude(name)*, like so:
+
+<pre class="prettyprint">
+  mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
+  	.exclude("name")
+  	...
+  	.register();
+</pre>
+
+_This would exclude the 'name' field from mapping._
+
+h4. Specifying a particular constructor to use
+
+Orika will attempt to find a best-fit match when choosing which constructor to use for instantiating the mapped types. To explicitly specify that Orika should use one particular constructor, use the *constructorA(parameterNames...)* and *constructorB(parameterNames...)*, as shown below; the *constructorA* method is used to specify a constructor for the 'left' side of the mapping, and *constructorB* is used to specify a constructor for the 'right' side. 
+
+In this example, we specify that the constructor with parameters { "name", "id" } should be used to instantiate instances of _BasicPerson_:
+
+<pre class="prettyprint">
+mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
+   .constructorA("name","id")
+   ...
+   .register();
+</pre>
+
+h4. Mapping elements of Arrays and Lists
+
+Field names can refer specific elements of arrays and lists, by using the typical syntax for referencing array and list elements used by Java EL, for example, suppose we have the class structure given below:
+
+<pre class="prettyprint">
+class BasicPerson {
+  private List<String> nameParts;
+  // getters/setters omitted
+}
+class BasicPersonDto { 
+  private String firstName;
+  private String lastName;
+  // getters/setters omitted
+}
+</pre>
+
+We could map the first element of BasicPerson's 'nameParts' to BasicPersonDto's 'firstName' property, and the second element to 'lastName', like so:
+ 
+<pre class="prettyprint">
+mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
+   .field("nameParts[0]", "firstName")
+   .field("nameParts[1]", "lastName")
+   .register();
+</pre>
+
+_Note that the same structure would work if 'nameParts' were defined as a `String[]`_
+
+h4. Mapping values of Map properties
+
+The same pattern may be applied to refer to values in a Map by listing the key's value within brackets, but the key value should be quoted (double or single); assuming that the 'nameParts' property from the previous example were defined as a `Map<String, String>`, we could reference individual key values like so:
+
+<pre class="prettyprint">
+mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
+   .field("nameParts['first']", "firstName")
+   .field("nameParts[\"last\"]", "lastName")
+   .register();
+</pre>
+
+h4. Mapping nested fields
+
+Nested properties may be referenced using standard dot '.' notation to separate properites, for example, assume we have the class structure listed below:
+
+<pre class="prettyprint">
+class Name {
+   private String first;
+   private String last;
+   private String fullName;
+   // getters/setters 
+}
+
+class BasicPerson {
+  private Name name;
+  // getters/setters omitted
+}
+class BasicPersonDto { 
+  private String firstName;
+  // getters/setters omitted
+}
+</pre>
+
+Then the following syntax could be used to map the nested "first" property of BasicPerson's "name" to the "firstName" property of BasicPersonDto:
+
+<pre class="prettyprint">
+mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
+   .field("name.first", "firstName")
+   .register();
+</pre>
+
+h4. Mapping nested multi-occurrence elements
+
+Nested multi-occurrence elements (of Array, Collection or Map) can also be mapped, by using syntax similar to that used for referencing individual indicies of Arrays, Lists or Maps. Suppose we have the class structure given below:
+
+<pre class="prettyprint">
+class Person {
+   private List<Name> names;
+   // getters/setters 
+}
+
+class PersonDto { 
+  private Map<String, Name> names;
+  private String[] firstNames;
+  private List<String> lastNames;
+  // getters/setters omitted
+}
+
+</pre>
+If we wanted to map the 'names' property from Person into the Map 'names' in PersonDto, with the 'fullName' property as the key, and the Name element as the value, we could accomplish it with the following syntax:
+
+<pre class="prettyprint">
+mapperFactory.classMap(Person.class, PersonDto.class)
+   .field("names[fullName]", "names[key]")
+   .field("names[]", "names[value]")
+   .register();
+</pre>
+  
+A few things to note: 
+* the element of a Map is assumed to be of type Map.Entry, so we can refer to either the 'key' or 'value' property of this element.
+* nested properties are legal within the brackets, and so are nested _element_ references, in case the element type itself also contains multi-occurrence fields that you want to map.  
+* the empty field name within the brackets ("names[]") is used to refer to the element itself (rather than some property of the element)

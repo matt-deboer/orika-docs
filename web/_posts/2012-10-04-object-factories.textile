@@ -1,0 +1,31 @@
+---
+layout: post
+id: object-factories
+title: Object Factories
+desc: customize object instantiation
+---
+
+h3. Object Factories
+
+Object Factory instance are used to specify how new object instances are created; use this mapping object type when your destination type requires use of a special constructor, a custom factory method, or some other special instantiation circumstances.
+To define a custom object factory, implement the <code>ma.glasnost.orika.ObjectFactory<T></code> interface in your implementation class, like so:
+
+<pre class="prettyprint">
+public class PersonFactory implements ObjectFactory<Person> {
+
+   public Person create(Object source, Type<Person> destinationType) {
+      Person person = new Person();
+      // set the default address
+      person.setAdress(new Address("Morocco", "Casablanca"));
+            return personDto;
+   }
+}
+</pre>
+
+h3. Register object factories
+
+To be eligible for use by Orika, your custom object factory should be registered with the type they create, like so:
+
+<pre class="prettyprint">
+mapperFactory.registerObjectFactory(new PersonFactory(), Person.class);
+</pre>
