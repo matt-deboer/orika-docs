@@ -1,0 +1,40 @@
+---
+layout: post
+id: extensibility
+title: Extending Orika
+desc: lower level customizations
+---
+
+h2. Overview
+
+At the core of Orika lives the MapperFactory, of which _DefaultMapperFactory_ is the provided implementation. DefaultMapperFactory is constructed using the nested _DefaultMapperFactory.Builder_ class, which is a fluent-style API that may be used to customize many aspects of how Orika functions at it's core. This tutorial page covers the different customizations that can be applied on the builder.
+
+h4. Mapping of nulls
+
+Mapping of *_null_* values can be disabled by using the *mapNulls(false)* method; use this to ensure that a null value in a source object's property will result in leaving the destination property unchanged, rather than causing it to be set to null (the default).
+
+h4. Disable auto-mapping
+
+Auto-mapping--that is, the automatic generation of new ClassMap, Mapper and ObjectFactory instances at runtime for classes that were not explicitly registered--can be disabled by use of the *enableAutomapping(false)* method; use this if you want to ensure that all mappings must be explicitly registered.
+
+h4. Compiler strategy
+
+The default compiler strategy used by Orika is the *ma.glasnost.orika.impl.generator.JavassistCompilerStrategy*, which uses the Javassist library to compile source into byte-code at runtime. This strategy is favored mostly because of it's small library footprint, decent performance, and ease of use.
+
+One of the drawbacks of using this strategy is that it does not produce the debug information necessary to enable step-debugging of the generated class files. There is an additional strategy, the *ma.glasnost.orika.impl.generator.EclipseJdtCompilerStrategy* which uses the Eclipse Jdt compiler to produce formatted source files with debug information enabled on the class files to allow step debugging of the generated Mapper and ObjectFactory code.
+
+h4. ClassMap builder factory
+
+The default ClassMapBuilder (and it's Factory) produces default mappings which match up fields with exact name matches in the source and destination type. This behavior can be customized by specifying an alternate to the default factory, using the *classMapBuilderFactory(factory)* method. 
+
+One such example is the *ma.glasnost.orika.metadata.ScoringClassMapBuilder.Factory*, which is able to match up the fields of a pair of types using a more sophisticated field name match scoring algorithm that factors in the similarity of field names, even among nested fields of a class. You could also provide your own such strategy to customize the behavior as needed.
+
+h4. Property resolver strategy
+
+Another aspect of Orika you may wish to customize is the way in which properties are discovered and resolved for the types being mapped. By using the *propertyResolverStrategy(strategy)* method, you can provide your own custom implementation of this. 
+
+The default, which is the *ma.glasnost.orika.property.IntrospectorPropertyResolver*, is based on discovery of "properties" based on the JavaBeans specification, with a few modifications including recognition of public fields, and allowing for Boolean with the same 'isX' (as is valid for boolean).
+
+h4. Code generation strategy
+
+You may even wish to control how the source code is generated for mapping particular field types from one class to another; you can override how existing types are mapped, remove support for some types, add support for new types, or even change the order in which the code generation _Specification_ instances are resolved.
