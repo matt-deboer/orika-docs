@@ -5,224 +5,134 @@ title: Advanced Mapping Configurations
 desc: beyond the basics of ClassMapBuilder API
 ---
 
+h2. Customized ClassMapBuilder
+
+In some cases, you may want to control the behavior of how the *byDefault()* method functions in aligning properties. The out-of-the-box behavior is to only match properties whose names are an exact match, but the behavior can be overridden by extending the basic ClassMapBuilder. 
+
+A (functional) sample customization of ClassMapBuilder has been provided which uses a scoring method to automagically 'guess' the proper alignment of fields, based on the edit distance of the property names (and some other things); this class is *ma.glasnost.orika.metadata.ScoringClassMapBuilder*, and it can be registered on the DefaultMapperFactory.Builder like so:
+
+<pre class="prettyprint">
+MapperFactory factory = new DefaultMapperFactory.Builder()
+    .classMapBuilderFactory(new ScoringClassMapBuilder.Factory())
+    .build();
+</pre>
+
+_Review the code for this class to see how you could provide your own alternative_
+
 h2. Ad-hoc/in-line property definitions
+
+h4. Property expressions 
 
 Most of the mapping details covered so far work fairly well to properties that conform to the JavaBeans standard; but what if your definition of "property" doesn't follow those rules? 
 
 The built-in property resolver (which is used to parse the string values passed and line them up with the appropriate Property) has a special syntax available for defining properties on the fly, where you can override the getter, setter, name, and type to be used. As usual, the best way to explain is with an example...
 
-h2. 
+Suppose we want to map from an object with a more generic structure, such as the _Element_ class shown below, which has getters and setters more like Map keys. 
 
-A ClassMapBuilder is obtained by calling the *_(big)classMap(aType, bType)_* method on a MapperFactory instance. It's best to start with an example -- suppose we have some instances of class *BasicPerson* that we'd like to map to instances of another class *BasicPersonDto*, defined like so:
-
-<pre class="prettyprint">
-class BasicPerson {
-  private String name;
-  private int age;
-  private Date birthDate;
-  // getters/setters omitted
-}
-class BasicPersonDto { 
-  private String fullName;
-  private int currentAge;
-  private Date birthDate;
-  // getters/setters omitted
+<pre class="prettyprint left">
+public static class Element {
+    Map<String,Object> attributes = new HashMap<String,Object>();
+    
+    public Object getAttribute(String name) {
+        return attributes.get(name);
+    }
+    public void setAttribute(String name, Object value) {
+        attributes.put(name, value);
+    }
 }
 </pre>
 
-In order to map between these classes, we'll need to first register a ClassMap for the two types, which is created like so:
-
-<pre class="prettyprint">
-  mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
-  	.field("name", "fullName")
-  	.field("age", "currentAge")
-  	.register();
-</pre>
-
-h4. Mapping fields by default
-
-In the case where one or more fields in the two types being mapped have matching names, the *byDefault* method can be used, like so:
-
-<pre class="prettyprint">
-  mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
-  	.field("name", "fullName")
-  	.field("age", "currentAge")
-  	.byDefault()
-  	.register();
-</pre>
-
-
-h4. Mapping fields in one direction only
-
-By default, a field mapping added using the *field(nameA, nameB)* method is bi-directional. To declare a field mapping that is only used in a single direction, use one of the *fieldAToB* or *fieldBToA* methods, like so:
-
-<pre class="prettyprint">
-  mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
-  	.fieldAToB("name", "fullName")
-  	...
-  	.register();
-</pre>
-
-_This would result in the 'name' field of BasicPerson being copied to the 'fullName' field of BasicPersonDto, but does not include mapping 'fullName' to 'name' when mapping is in the other direction._
-
-
-h4. Excluding a field from mapping
-
-To explicitly exclude a field from mapping, use the *exclude(name)*, like so:
-
-<pre class="prettyprint">
-  mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
-  	.exclude("name")
-  	...
-  	.register();
-</pre>
-
-_This would exclude the 'name' field from mapping._
-
-h4. Specifying a particular constructor to use
-
-Orika will attempt to find a best-fit match when choosing which constructor to use for instantiating the mapped types. To explicitly specify that Orika should use one particular constructor, use the *constructorA(parameterNames...)* and *constructorB(parameterNames...)*, as shown below; the *constructorA* method is used to specify a constructor for the 'left' side of the mapping, and *constructorB* is used to specify a constructor for the 'right' side. 
-
-In this example, we specify that the constructor with parameters { "name", "id" } should be used to instantiate instances of _BasicPerson_:
-
-<pre class="prettyprint">
-mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
-   .constructorA("name","id")
-   ...
-   .register();
-</pre>
-
-h4. Mapping of null values
-
-h5. At the ClassMap level
-
-Mapping of null values can be controlled on a ClassMapBuilder by using the *mapNulls(true|false)* or *mapNullsInReverse(true|false)* (for controlling mapping of nulls in the reverse direction). By setting this value on a ClassMapBuilder, all field mappings created on the same ClassMapBuilder (after the value is set) will take on that same value. For example:
-
-<pre class="prettyprint">
-mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
-   .mapNulls(true).mapNullsInReverse(true)
-   .field("field1", "fieldOne")
-   .mapNulls(false).mapNullsInReverse(false)
-   .field("field2", "fieldTwo")
-   .byDefault()
-   .register();
-</pre>
-
-Let's break down this example; first, we set _mapNulls(true)_ and _mapNullsInReverse(true)_, which specifies that the field 'fieldOne' will be set to *null* if 'field1' is null (mapNulls(true)), and also that the field 'field1' will be set to *null* if 'fieldOne' is null (mapNullsInReverse(true)) -- this is because this field mapping statement followed the original setting.
-
-Next, we set mapNulls(false) and mapNullsInReverse(false), which means that all of the field mapping statements following it will not map null values.
-
-h5. At the FieldMap level
-
-Note that we can also set this value individually on specific field maps, as in the following example:
-
-<pre class="prettyprint">
-mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
-   .mapNulls(false).mapNullsInReverse(false)
-   .fieldMap("field1", "fieldOne").mapNulls(true).mapNullsInReverse(true).add()
-   .field("field2", "fieldTwo")
-   .byDefault()
-   .register();
-</pre>
-
-In this example, we've set the default for this ClassMap to _not_ map nulls (in either direction), but for the mapping of 'field1' to 'fieldOne' (in both directions), we specified that null values _should_ be mapped.
-
-h4. Mapping elements of Arrays and Lists
-
-Field names can refer specific elements of arrays and lists, by using the typical syntax for referencing array and list elements used by Java EL, for example, suppose we have the class structure given below:
-
-<pre class="prettyprint">
-class BasicPerson {
-  private List<String> nameParts;
-  // getters/setters omitted
-}
-class BasicPersonDto { 
-  private String firstName;
-  private String lastName;
-  // getters/setters omitted
+<pre class="prettyprint right">
+public static class Person {
+    public String firstName;
+    public String lastName;
+    public String jobTitle;
+    public String salary;
 }
 </pre>
+<br/>
 
-We could map the first element of BasicPerson's 'nameParts' to BasicPersonDto's 'firstName' property, and the second element to 'lastName', like so:
- 
-<pre class="prettyprint">
-mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
-   .field("nameParts[0]", "firstName")
-   .field("nameParts[1]", "lastName")
-   .register();
+We can define the properties of the Element type using in-line property definition, like so:
+
+<pre class="prettyprint left">
+"employment:{getAttribute('employment')|setAttribute('employment', %s)|type=ma.glasnost.orika.test.property.PropertyResolverTestCase.Element}";
 </pre>
 
-_Note that the same structure would work if 'nameParts' were defined as a `String[]`_
+To break down the parts, we begin with the property name <code>employment</code>, follwed by <code>:{</code> to begin an *in-line property definition*.
+We begin the in-line definition with the _getter_ first <code>getAttribute('employment')</code>, using the pipe <code>|</code> to separate it from the setter which follows: <code>setAttribute('employment', %s)</code>. Note the use of the <code>%s</code> place-holder, which represents the value to be set.
+We follow this with another pipe <code>|</code> to separate the setter from the type definition). Note that the type definition  begins with *type=*.
+Finally, we end the in-line definition with a closing brace <code>}</code>.
 
-h4. Mapping values of Map properties
+<div class="alert alert-info alert-block">
+<h4 class="alert-heading">_In-line property syntax:_</h4>
+<h3>&laquo;name&raquo; *:{* &laquo;getter&raquo;  *|* &laquo;setter&raquo; [ *|* *type=* &laquo;type&raquo; ] *}*</h3>
+<h3>&laquo;name&raquo; *:{* &laquo;getter&raquo; [ *|* *type=* &laquo;type&raquo; ] *}*</h3>
+<h3>&laquo;name&raquo; *:{|* &laquo;setter&raquo; [ *|* *type=* &laquo;type&raquo; ] *}*</h3>
+</div>
 
-The same pattern may be applied to refer to values in a Map by listing the key's value within brackets, but the key value should be quoted (double or single); assuming that the 'nameParts' property from the previous example were defined as a `Map<String, String>`, we could reference individual key values like so:
+So, to bring it together, we can define properties for these elements with the code snippet below. Note that we're defining some properties as nested (separated by the usual *'.'* as separator ).
+Also note that we can refer to an inline property already defined simply by using it's name; no need to repeat the definition for each reference.
 
-<pre class="prettyprint">
-mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
-   .field("nameParts['first']", "firstName")
-   .field("nameParts[\"last\"]", "lastName")
-   .register();
+<pre class="prettyprint left">
+String employmentDef = 
+  "employment:{getAttribute('employment')|setAttribute('employment', %s)|type=ma.glasnost.orika.test.property.PropertyResolverTestCase.Element}";
+String jobTitleDef = 
+  "jobTitle:{getAttribute(\"job's Title\")|setAttribute(\"job's Title\", %s)|type=List<String>}";
+String salaryDef = 
+  "salary:{getAttribute(\"'salary'\")|setAttribute(\"'salary'\", %s)|type=java.lang.Long}";
+
+String nameDef =
+  "name:{getAttribute('name')|setAttribute('name',%s)|type=ma.glasnost.orika.test.property.PropertyResolverTestCase.Element}";
+String firstNameDef = "first:{getAttribute('first')|setAttribute('first', %s)|type=java.lang.String}";
+String lastNameDef = "last:{getAttribute('last')|setAttribute('last', %s)|type=java.lang.String}";
+
+factory.classMap(Element.class, Person.class)
+    .field(employmentDef + "." + jobTitleDef, "jobTitles")
+    .field("employment." + salaryDef, "salary") // reuse the in-line declaration of 'employment' property
+    .field(nameDef + "." + firstNameDef, "firstName")
+    .field("name." + lastNameDef, "lastName") // reuses the in-line declaration of 'name' property
+    .register();
 </pre>
 
-h4. Mapping nested fields
+h4. Defining properties with Property.Builder
 
-Nested properties may be referenced using standard dot '.' notation to separate properites, for example, assume we have the class structure listed below:
+Properties can also be defined in a more programmatic way, using the _Property.Builder_ API, as seen in the following example:
 
 <pre class="prettyprint">
-class Name {
-   private String first;
-   private String last;
-   private String fullName;
-   // getters/setters 
+Property.Builder.propertyFor(Element.class, "employment")
+    .type(Element.class)
+    .getter("getAttribute(\"employment\")")
+    .setter("setAttribute(\"employment\", %s)");
+</pre>
+
+h2. Customizing the PropertyResolverStrategy
+
+In case you have many properties of the same type (say, our _Element_ class), a custom PropertyResolverStrategy can be defined which automatically injects an inline definition matching our custom type in the case that the normal property lookup has failed. The definition is shown below:
+
+<pre class="prettyprint">
+public static class ElementPropertyResolver extends IntrospectorPropertyResolver {
+  protected Property getProperty(java.lang.reflect.Type type, String expr, 
+  		boolean isNestedLookup, Property owner) throws MappingException {
+    Property property = null;
+    try {
+      property = super.getProperty(type, expr, isNestedLookup, null);
+    } catch (MappingException e) {
+      try {
+        property = super.resolveInlineProperty(type, expr + 
+            ":{getAttribute(\""+ expr+"\")|setAttribute(\""+ expr+"\",%s)|type=" + 
+            (isNestedLookup ? Element.class.getName() : "Object") + "}");
+      } catch (MappingException e2) {
+        throw e; // throw the original exception
+      }
+    }
+    return property;
+  }
 }
 
-class BasicPerson {
-  private Name name;
-  // getters/setters omitted
-}
-class BasicPersonDto { 
-  private String firstName;
-  // getters/setters omitted
-}
+/*
+ * Register this on the DefaultMapperFactory.Builder
+ */
+MapperFactory factory = new DefaultMapperFactory.Builder()
+                    .propertyResolverStrategy(new ElementPropertyResolver())
+                    .build();
 </pre>
-
-Then the following syntax could be used to map the nested "first" property of BasicPerson's "name" to the "firstName" property of BasicPersonDto:
-
-<pre class="prettyprint">
-mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
-   .field("name.first", "firstName")
-   .register();
-</pre>
-
-h4. Mapping nested multi-occurrence elements
-
-Nested multi-occurrence elements (of Array, Collection or Map) can also be mapped, by using syntax similar to that used for referencing individual indicies of Arrays, Lists or Maps. Suppose we have the class structure given below:
-
-<pre class="prettyprint">
-class Person {
-   private List<Name> names;
-   // getters/setters 
-}
-
-class PersonDto { 
-  private Map<String, Name> names;
-  private String[] firstNames;
-  private List<String> lastNames;
-  // getters/setters omitted
-}
-
-</pre>
-If we wanted to map the 'names' property from Person into the Map 'names' in PersonDto, with the 'fullName' property as the key, and the Name element as the value, we could accomplish it with the following syntax:
-
-<pre class="prettyprint">
-mapperFactory.classMap(Person.class, PersonDto.class)
-   .field("names{fullName}", "names{key}")
-   .field("names{}", "names{value}")
-   .register();
-</pre>
-  
-A few things to note: 
-* the element of a Map is assumed to be of type Map.Entry, so we can refer to either the 'key' or 'value' property of this element.
-* nested properties are legal within the brackets, and so are nested _element_ references, in case the element type itself also contains multi-occurrence fields that you want to map.  
-* the empty field name within the brackets ("names[]") is used to refer to the element itself (rather than some property of the element)
