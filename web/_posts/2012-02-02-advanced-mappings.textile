@@ -5,9 +5,73 @@ title: Advanced Mapping Configurations
 desc: beyond the basics of ClassMapBuilder API
 ---
 
-h2. Customized ClassMapBuilder
+h4. Mapping of null values
 
-In some cases, you may want to control the behavior of how the *byDefault()* method functions in aligning properties. The out-of-the-box behavior is to only match properties whose names are an exact match, but the behavior can be overridden by extending the basic ClassMapBuilder. 
+In some cases, you may wish to control whether nulls are mapped or ignored when they are encountered. By default, Orika will map null values when encountered. This behavior can be customized at different levels depending on how specific you'd like to be.
+
+h5. At the global level
+
+The global default behavior can be controlled using the *mapNulls(false)* method on _DefaultMapperFactory.Builder_; use this to ensure that a null value in a source object's property will result in leaving the destination property unchanged, rather than causing it to be set to null (the default).
+
+The global setting will take effect for in any case where a setting has not been applied at the ClassMap or FieldMap level to override.
+
+h5. At the ClassMap level
+
+Mapping of null values can be controlled on a ClassMapBuilder by using the *mapNulls(true|false)* or *mapNullsInReverse(true|false)* (for controlling mapping of nulls in the reverse direction). By setting this value on a ClassMapBuilder, all field mappings created on the same ClassMapBuilder (after the value is set) will take on that same value. For example:
+
+<pre class="prettyprint">
+mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
+   .mapNulls(true).mapNullsInReverse(true)
+   .field("field1", "fieldOne")
+   .mapNulls(false).mapNullsInReverse(false)
+   .field("field2", "fieldTwo")
+   .byDefault()
+   .register();
+</pre>
+
+Let's break down this example; first, we set _mapNulls(true)_ and _mapNullsInReverse(true)_, which specifies that the field 'fieldOne' will be set to *null* if 'field1' is null (mapNulls(true)), and also that the field 'field1' will be set to *null* if 'fieldOne' is null (mapNullsInReverse(true)) -- this is because this field mapping statement followed the original setting.
+
+Next, we set mapNulls(false) and mapNullsInReverse(false), which means that all of the field mapping statements following it will not map null values.
+
+h5. At the FieldMap level
+
+Note that we can also set this value individually on specific field maps, as in the following example:
+
+<pre class="prettyprint">
+mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
+   .mapNulls(false).mapNullsInReverse(false)
+   .fieldMap("field1", "fieldOne").mapNulls(true).mapNullsInReverse(true).add()
+   .field("field2", "fieldTwo")
+   .byDefault()
+   .register();
+</pre>
+
+In this example, we've set the default for this ClassMap to _not_ map nulls (in either direction), but for the mapping of 'field1' to 'fieldOne' (in both directions), we specified that null values _should_ be mapped.
+
+
+
+h4. Customizing individual ClassMaps
+
+For cases where an individual mapping requires a little extra customization, the *customize()* method can be used on a ClassMap to add a CustomMapper definition which will be called after the registered field mappings have been applied. 
+
+Let's demonstrate with an example:
+
+<pre class="prettyprint">
+mapperFactory.classMap(Source.class, Destination.class)
+	.byDefault()
+	.customize(
+	   new CustomMapper<Source, Destination> {
+	      public void mapAtoB(A a, B b, MappingContext context) {
+	         // add your custom mapping code here
+	      }
+       }
+    .register();
+</pre>
+
+
+h4. Customized ClassMapBuilder
+
+In other cases, you may want to control the behavior of the ClassMapBuilder's *byDefault()* method in aligning the unmatched properties. The out-of-the-box behavior is to only match properties whose names are an exact match (_case-sensitive_), but this behavior can be overridden by extending the basic ClassMapBuilder. 
 
 A (functional) sample customization of ClassMapBuilder has been provided which uses a scoring method to automagically 'guess' the proper alignment of fields, based on the edit distance of the property names (and some other things); this class is *ma.glasnost.orika.metadata.ScoringClassMapBuilder*, and it can be registered on the DefaultMapperFactory.Builder like so:
 
@@ -17,7 +81,7 @@ MapperFactory factory = new DefaultMapperFactory.Builder()
     .build();
 </pre>
 
-_Review the code for this class to see how you could provide your own alternative_
+_Note that we've registered the Factory for this class; review the source for this class to see how you could provide your own alternative_
 
 h2. Ad-hoc/in-line property definitions
 

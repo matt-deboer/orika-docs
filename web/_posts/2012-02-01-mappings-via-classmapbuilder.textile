@@ -92,40 +92,6 @@ mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
    .register();
 </pre>
 
-h4. Mapping of null values
-
-h5. At the ClassMap level
-
-Mapping of null values can be controlled on a ClassMapBuilder by using the *mapNulls(true|false)* or *mapNullsInReverse(true|false)* (for controlling mapping of nulls in the reverse direction). By setting this value on a ClassMapBuilder, all field mappings created on the same ClassMapBuilder (after the value is set) will take on that same value. For example:
-
-<pre class="prettyprint">
-mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
-   .mapNulls(true).mapNullsInReverse(true)
-   .field("field1", "fieldOne")
-   .mapNulls(false).mapNullsInReverse(false)
-   .field("field2", "fieldTwo")
-   .byDefault()
-   .register();
-</pre>
-
-Let's break down this example; first, we set _mapNulls(true)_ and _mapNullsInReverse(true)_, which specifies that the field 'fieldOne' will be set to *null* if 'field1' is null (mapNulls(true)), and also that the field 'field1' will be set to *null* if 'fieldOne' is null (mapNullsInReverse(true)) -- this is because this field mapping statement followed the original setting.
-
-Next, we set mapNulls(false) and mapNullsInReverse(false), which means that all of the field mapping statements following it will not map null values.
-
-h5. At the FieldMap level
-
-Note that we can also set this value individually on specific field maps, as in the following example:
-
-<pre class="prettyprint">
-mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
-   .mapNulls(false).mapNullsInReverse(false)
-   .fieldMap("field1", "fieldOne").mapNulls(true).mapNullsInReverse(true).add()
-   .field("field2", "fieldTwo")
-   .byDefault()
-   .register();
-</pre>
-
-In this example, we've set the default for this ClassMap to _not_ map nulls (in either direction), but for the mapping of 'field1' to 'fieldOne' (in both directions), we specified that null values _should_ be mapped.
 
 h4. Mapping elements of Arrays and Lists
 

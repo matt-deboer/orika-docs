@@ -9,12 +9,6 @@ h2. Overview
 
 At the core of Orika lives the MapperFactory, of which _DefaultMapperFactory_ is the provided implementation. DefaultMapperFactory is constructed using the nested _DefaultMapperFactory.Builder_ class, which is a fluent-style API that may be used to customize many aspects of how Orika functions at it's core. This tutorial page covers the different customizations that can be applied on the builder.
 
-h4. Mapping of nulls
-
-Although mapping of *_null_* values can be disabled on an individual ClassMap, or an individual FieldMap of a ClassMap, the default behavior can also be controlled using the *mapNulls(false)* method; use this to ensure that a null value in a source object's property will result in leaving the destination property unchanged, rather than causing it to be set to null (the default).
-
-Note that setting this value only changes the global default; any setting applied to a ClassMap or FieldMap will override the global setting.
-
 h4. Disable auto-mapping
 
 Auto-mapping--that is, the automatic generation of new ClassMap, Mapper and ObjectFactory instances at runtime for classes that were not explicitly registered--can be disabled by use of the *enableAutomapping(false)* method; use this if you want to ensure that all mappings must be explicitly registered.

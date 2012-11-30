@@ -5,7 +5,5 @@ title: Custom Mappers
 desc: explicitly define how properties are copied from one object to another
 ---
 
-<div class="page-header">
-  <h1>Object Factories <small>Why do you need ObjectFactory?</small></h1>
-</div>
+
 
