@@ -1,0 +1,105 @@
+---
+layout: post
+id: examples
+title: Examples
+desc: cooking with Orika
+---
+
+h3. Example #1
+
+In this first example, we try to demonstrate mapping some mismatched fields
+
+<pre class="prettyprint left">
+public class Person {
+  private Name name;
+  private List<Name> knownAliases;
+  private Date birthDate;
+  
+  public Person(Name name, Date birthDate, 
+        List<Name> knownAliases) {
+    this.name = name;
+    this.birthDate = birthDate.clone();
+    this.knownAliases = new ArrayList<Name>(knownAliases);
+  }
+  public List<Name> getKnownAliases() {
+    return Collections.unmodifiableList(knownAliases);
+  }
+  public Name getName() {
+    return name;
+  }
+  public Date getBirthDate() {
+    return birthDate.clone();
+  } 
+}
+
+public class Name {
+  private String first;
+  private String last;
+  
+  public Name(String first, String last) {
+    this.first = first;
+    this.last = last;
+  }
+  public String getFirst() {
+    return first;
+  }
+  public String getLast() {
+    return last;
+  }
+}
+</pre>
+<pre class="prettyprint right">
+public class PersonDto {
+  private String firstName;
+  private String lastName;
+  private Date birthDate;
+  private String[][] aliases;
+  
+  public String getFirstName() {
+    return firstName;
+  }
+  public String getLastName() {
+    return lastName;
+  }
+  public Date getBirthDate() {
+    return birthDate;
+  }
+  public String[] getAliases() {
+    return knownAliases;
+  }
+  public void setFirstName(String firstName) {
+    this.firstName = firstName;
+  }
+  public void setLastName(String lastName) {
+    this.lastName = lastName;
+  }
+  public void setBirthDate(Date birthDate) {
+    this.birthDate = birthDate;
+  }
+  public void setAliases(String[][] aliases) {
+    this.aliases = aliases;
+  }
+}
+</pre>
+<br>
+
+Let's assume that we'd like to map _Person_ to _PersonDto_ (and vise-versa); there are a few interesting points about these two classes. First, _Person_ has a 'name' property which is of type _Name_, while _PersonDto_ contains the name data in two string fields 'firstName' and 'lastName'. 
+Also, the 'knownAliases' property of _Person_ is actually stored in a multi-dimensional array in _PersonDto_, with the first name in index 0 of the second dimension, and the last name in index 1 of the second dimension.
+
+Below, we'll demonstrate how to configure Orika to map these classes; we'll use our own custom extension of _ConfigurableMapper_, like so:
+
+<pre class="prettyprint">
+public class Mapper extends ConfigurableMapper {
+  protected void configure(MapperFactory factory) {
+    factory.classMap(Person.class, PersonDto.class)
+      .field("name.first", "firstName")
+      .field("name.last", "lastName")
+      .field("knownAliases[name.first]", "aliases[[0]]")
+      .field("knownAliases[name.last]", "aliases[[1]]")
+      .byDefault()
+      .register();      
+  }
+}
+</pre>
+
+

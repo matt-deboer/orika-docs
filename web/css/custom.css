@@ -1,0 +1,28 @@
+.left {
+	float: left;
+	margin-right: 1em;
+}
+.right {
+	float: left;
+}
+
+br {
+	clear: both;
+}
+
+.container {
+	box-shadow: 0 0 200px #CCC;
+	padding-left: 2em;
+	padding-right: 2em;
+}
+
+.navbar-inner .container {
+    box-shadow: none !important;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+#footer .inner .container {
+    background-color: #DDDDDD;
+    padding-top: 0.5em;
+}

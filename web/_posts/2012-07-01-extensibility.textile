@@ -11,7 +11,9 @@ At the core of Orika lives the MapperFactory, of which _DefaultMapperFactory_ is
 
 h4. Mapping of nulls
 
-Mapping of *_null_* values can be disabled by using the *mapNulls(false)* method; use this to ensure that a null value in a source object's property will result in leaving the destination property unchanged, rather than causing it to be set to null (the default).
+Although mapping of *_null_* values can be disabled on an individual ClassMap, or an individual FieldMap of a ClassMap, the default behavior can also be controlled using the *mapNulls(false)* method; use this to ensure that a null value in a source object's property will result in leaving the destination property unchanged, rather than causing it to be set to null (the default).
+
+Note that setting this value only changes the global default; any setting applied to a ClassMap or FieldMap will override the global setting.
 
 h4. Disable auto-mapping
 

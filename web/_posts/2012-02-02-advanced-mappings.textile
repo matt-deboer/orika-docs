@@ -1,17 +1,17 @@
 ---
 layout: post
-id: classmap-builder
-title: Declarative Mapping Configuration
-desc: using the fluent-style ClassMapBuilder API
+id: advanced-mappings
+title: Advanced Mapping Configurations
+desc: beyond the basics of ClassMapBuilder API
 ---
 
-h2. Overview
+h2. Ad-hoc/in-line property definitions
 
-Orika uses a declarative Java-based configuration of mappings from one class to another, whereby you define which fields from one type need to be matched up with which fields from another using a fluent-style API.
+Most of the mapping details covered so far work fairly well to properties that conform to the JavaBeans standard; but what if your definition of "property" doesn't follow those rules? 
 
-For many cases, Orika can properly generate a suitable mapper using just the names of the fields you provide--by investigating their respective types using reflection. If the names of the fields you need to map match, you don't even need to explicitly declare them.
+The built-in property resolver (which is used to parse the string values passed and line them up with the appropriate Property) has a special syntax available for defining properties on the fly, where you can override the getter, setter, name, and type to be used. As usual, the best way to explain is with an example...
 
-h2. The ClassMapBuilder API
+h2. 
 
 A ClassMapBuilder is obtained by calling the *_(big)classMap(aType, bType)_* method on a MapperFactory instance. It's best to start with an example -- suppose we have some instances of class *BasicPerson* that we'd like to map to instances of another class *BasicPersonDto*, defined like so:
 
@@ -91,6 +91,41 @@ mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
    ...
    .register();
 </pre>
+
+h4. Mapping of null values
+
+h5. At the ClassMap level
+
+Mapping of null values can be controlled on a ClassMapBuilder by using the *mapNulls(true|false)* or *mapNullsInReverse(true|false)* (for controlling mapping of nulls in the reverse direction). By setting this value on a ClassMapBuilder, all field mappings created on the same ClassMapBuilder (after the value is set) will take on that same value. For example:
+
+<pre class="prettyprint">
+mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
+   .mapNulls(true).mapNullsInReverse(true)
+   .field("field1", "fieldOne")
+   .mapNulls(false).mapNullsInReverse(false)
+   .field("field2", "fieldTwo")
+   .byDefault()
+   .register();
+</pre>
+
+Let's break down this example; first, we set _mapNulls(true)_ and _mapNullsInReverse(true)_, which specifies that the field 'fieldOne' will be set to *null* if 'field1' is null (mapNulls(true)), and also that the field 'field1' will be set to *null* if 'fieldOne' is null (mapNullsInReverse(true)) -- this is because this field mapping statement followed the original setting.
+
+Next, we set mapNulls(false) and mapNullsInReverse(false), which means that all of the field mapping statements following it will not map null values.
+
+h5. At the FieldMap level
+
+Note that we can also set this value individually on specific field maps, as in the following example:
+
+<pre class="prettyprint">
+mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
+   .mapNulls(false).mapNullsInReverse(false)
+   .fieldMap("field1", "fieldOne").mapNulls(true).mapNullsInReverse(true).add()
+   .field("field2", "fieldTwo")
+   .byDefault()
+   .register();
+</pre>
+
+In this example, we've set the default for this ClassMap to _not_ map nulls (in either direction), but for the mapping of 'field1' to 'fieldOne' (in both directions), we specified that null values _should_ be mapped.
 
 h4. Mapping elements of Arrays and Lists
 
@@ -182,8 +217,8 @@ If we wanted to map the 'names' property from Person into the Map 'names' in Per
 
 <pre class="prettyprint">
 mapperFactory.classMap(Person.class, PersonDto.class)
-   .field("names[fullName]", "names[key]")
-   .field("names[]", "names[value]")
+   .field("names{fullName}", "names{key}")
+   .field("names{}", "names{value}")
    .register();
 </pre>
   
