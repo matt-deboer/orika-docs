@@ -5,5 +5,25 @@ title: Custom Mappers
 desc: explicitly define how properties are copied from one object to another
 ---
 
+h4. Custom Mappers
+
+Already covered in an earlier section was the capability to customize a ClassMap by using the *customize(CustomMapper<A,B>)*, but suppose that you don't want to register this custom mapper explicitly for every ClassMap pair; instead, you can register your CustomMapper instance on the MapperFactory so that whenever a mapping is requested with types compatible to those of your CustomMapper, it will be given control.
+
+This can be done using the *registerMapper(CustomMapper<A,B>)* method on the MapperFactory, like so:
+
+<pre class="prettyprint">
+factory.registerMapper(new MyCustomMapper());
+</pre>
+
+<div class="alert-box alert-danger alert">
+<h4>Be careful how you choose the types on your CustomMapper instance</h4>
+<p>If you were to define your custom mapper like <code>MyCustomMapper extends CustomMapper<?,?></code> (which is what you get by default if you're accustomed to ignoring Java generics) then it would called for most all mapping requests, which is very likely not what you intended! 
+</div>
+
+h4. Mappers only copy properties
+
+A Mapper (in the world of Orika) is something which copies the properties of one object instance to another. It works on already instantiated object instances which are passed in by reference. If you were expecting to replace one of the mapped object instances, a CustomMapper is not what you're looking for; we suggest using a custom _ObjectFactory_ or a _CustomConverter_ instead--both of these return a new instance of the result object.
+
+
 
 
