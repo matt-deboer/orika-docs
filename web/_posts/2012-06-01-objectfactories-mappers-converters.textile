@@ -7,16 +7,17 @@ desc: when to choose one over the others
 
 h3. What's the difference?
 
-*ObjectFactory* defines types which are used for constructing instances of particular objects.
+<div class="alert-box alert alert-info">
+<h4>ObjectFactory <small>instantiates objects.</small></h4>
 
-*Mapper* defines types which are used to copy data from one object instance to another.
+<h4>Mapper <small>copies the properties from one object onto another.</small></h4>
 
-*Converter* defines types which combine both _ObjectFactory_ and _Mapper_ together, returning a new instance of
- of the destination type which has been converted from a source instance 
+<h4>Converter <small>combines both _ObjectFactory_ and _Mapper_ together, returning a new instance of the destination type with all properties copied from the source instance</small></h4>.
+</div>
 
 h3. When to use a Converter
 
-It makes sense to use a Converter for most cases where you find that Orika doesn't handle mapping an instance of a source object into a specific destination type. A custom converter (defined by extending *CustomConverter<A,B>*) returns a new, fully mapped instance of a specific destination type from a source type instance. Use this for cases where you plan to call <code>Destination result = mapperFacade.map(object1, Destination.class)</code>, and the default mapping behavior configured via the ClassMapBuilder API doesn't suit your purposes.
+It makes sense to use a Converter for most cases where you find that Orika doesn't handle mapping an instance of a source object into a specific destination type. A custom converter (defined by extending *CustomConverter<A,B>*) returns a new, fully mapped instance of a specific destination type from a source type instance. Use this for cases where you want to completely customize the process of mapping from one object to a new instance of another type, and the default mapping behavior configured via the ClassMapBuilder API doesn't suit your purposes.
 
 Note that when you extend _CustomConverter_, your extension class will have access to the current MapperFacade via a protected *mapperFacade* variable, which you can use to map nested members of a given object.
 

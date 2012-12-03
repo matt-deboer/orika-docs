@@ -54,7 +54,7 @@ To enable step-through debugging into the generated objects (which Orika is buil
 <dependency>
    <groupId>ma.glasnost.orika</groupId>
    <artifactId>orika-eclipse-tools</artifactId>
-   <version>1.2.1</version><!-- please verify the latest version -->
+   <version>1.4.0</version><!-- please verify the latest version -->
 </dependency> 
 </pre>
 

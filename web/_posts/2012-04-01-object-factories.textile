@@ -24,7 +24,7 @@ public class PersonFactory implements ObjectFactory<Person> {
 
 h3. Register object factories
 
-To be eligible for use by Orika, your custom object factory should be registered with the type they create, like so:
+To be eligible for use by Orika, an instance of your custom object factory should be registered with the type it creates, like so:
 
 <pre class="prettyprint">
 mapperFactory.registerObjectFactory(new PersonFactory(), Person.class);

@@ -2,35 +2,105 @@
 layout: post
 id: extensibility
 title: Extending Orika
-desc: lower level customizations
+desc: advanced customizations
 ---
 
-h2. Overview
+Many of the core behaviors of Orika can be customized, and the main entry point for those customizations is through the _DefaultMapperFactory.Builder_. It allows configuration of alternative _strategies_ and _factories_ which help provide the core behavior--see the Javadoc for more details.
 
-At the core of Orika lives the MapperFactory, of which _DefaultMapperFactory_ is the provided implementation. DefaultMapperFactory is constructed using the nested _DefaultMapperFactory.Builder_ class, which is a fluent-style API that may be used to customize many aspects of how Orika functions at it's core. This tutorial page covers the different customizations that can be applied on the builder.
+The DefaultMapperFactory itself can also be extended (along with it's _Builder_) where needed; take a look at the test *ma.glasnost.orika.test.extensibility.DefaultMapperFactoryExtensibilityTestCase* for one such example.
 
-h4. Disable auto-mapping
-
-Auto-mapping--that is, the automatic generation of new ClassMap, Mapper and ObjectFactory instances at runtime for classes that were not explicitly registered--can be disabled by use of the *enableAutomapping(false)* method; use this if you want to ensure that all mappings must be explicitly registered.
-
-h4. Compiler strategy
+h3. Customizing the Compiler strategy
 
 The default compiler strategy used by Orika is the *ma.glasnost.orika.impl.generator.JavassistCompilerStrategy*, which uses the Javassist library to compile source into byte-code at runtime. This strategy is favored mostly because of it's small library footprint, decent performance, and ease of use.
 
 One of the drawbacks of using this strategy is that it does not produce the debug information necessary to enable step-debugging of the generated class files. There is an additional strategy, the *ma.glasnost.orika.impl.generator.EclipseJdtCompilerStrategy* which uses the Eclipse Jdt compiler to produce formatted source files with debug information enabled on the class files to allow step debugging of the generated Mapper and ObjectFactory code.
 
-h4. ClassMap builder factory
+_Note, to use this alternative in your environment, you'll need to include the *orika-eclipse-tools* module among your project's dependencies._
+
+<pre class="prettyprint">
+<dependency>
+   <groupId>ma.glasnost.orika</groupId>
+   <artifactId>orika-eclipse-tools</artifactId>
+   <version>1.2.1</version><!-- please verify the latest version -->
+</dependency> 
+</pre>
+
+h3. Customizing the individual mapping Specifications
+
+When Orika generates code to map from one type of field to another, it uses instances of the *_ma.glasnost.orika.impl.generator.Specification_* interface. The interface is shown below:
+
+<pre class="prettyprint">
+/**
+ * Specification encapsulates the logic to generate code for mapping comparing a pair of types
+ */
+public interface Specification {
+    
+    /**
+     * Tests whether this Specification applies to the specified FieldMap
+     */
+    boolean appliesTo(FieldMap fieldMap);
+    
+    /**
+     * Generates code for a boolean equality test between the two variable types,
+     * where are potentially unrelated.
+     */
+    String generateEqualityTestCode(FieldMap fieldMap, VariableRef source, VariableRef destination, SourceCodeContext code);
+    
+    /**
+     * Generates code to map the provided field map
+     */
+    String generateMappingCode(FieldMap fieldMap, VariableRef source, VariableRef destination, SourceCodeContext code);
+}
+</pre>
+
+The point of control for these instances of _Specification_ is the *_CodeGenerationStrategy_*. This class contains the ordered set of Specifications which will be tested to find a Specification which can be applied to a particular FieldMap instance.
+
+The _CodeGenerationStrategy_ can be obtained from the _DefaultMapperFactory.Builder_ instance while constructing the MapperFactory, via the *getCodeGnerationStrategy()* method. This instance can then be used to replace, reorder, and override the Specification instances which are used to generate the mapping code.
+
+<div class="alert alert-box alert-info">
+The specifications provided by default have been ordered to match the order used to resolve a MappingStrategy instance within the MapperFacade. Re-ordering these specifications can have unintended side-effects on the standard field-mapping behavior. 
+</div>
+
+In addition to the set of _Specification_ instances used to generate standard single field mappings, there is a set of *_ma.glasnost.orika.impl.generator.AggregateSpecification_* instances which are applied whenever a nested element expression is involved. A nested element expression looks like this: <code>someListField{someElementField}</code>, where 'someElementField' references a property on the elements within 'someListField'.
+
+_Perhaps the best way to understand what's going on here is to check out the source code in the *ma.glasnost.orika.impl.generator* package._
+
+
+h3. ClassMap builder factory
 
 The default ClassMapBuilder (and it's Factory) produces default mappings which match up fields with exact name matches in the source and destination type. This behavior can be customized by specifying an alternate to the default factory, using the *classMapBuilderFactory(factory)* method. 
 
 One such example is the *ma.glasnost.orika.metadata.ScoringClassMapBuilder.Factory*, which is able to match up the fields of a pair of types using a more sophisticated field name match scoring algorithm that factors in the similarity of field names, even among nested fields of a class. You could also provide your own such strategy to customize the behavior as needed.
 
-h4. Property resolver strategy
+Some other examples used internally are:
+<dl>
+* ma.glasnost.orika.metadata.ClassMapBuilderForMaps 
+_overrides *byDefault* to auto-map the remaining properties of the non-map type to map lookups against keys named the same as the corresponding properties_
+* ma.glasnost.orika.metadata.ClassMapBuilderForLists 
+_overrides *byDefault* to auto-map the remaining properties of the non-list type to list index lookups (in declared  property order)_
+* ma.glasnost.orika.metadata.ClassMapBuilderForArrays
+_overrides *byDefault* to auto-map the remaining properties of the non-list type to array index lookups (in declared  property order)_
 
-Another aspect of Orika you may wish to customize is the way in which properties are discovered and resolved for the types being mapped. By using the *propertyResolverStrategy(strategy)* method, you can provide your own custom implementation of this. 
+h3. Property resolver strategy
+
+Another aspect of Orika you may wish to customize is the way in which properties are discovered and resolved for the types being mapped. By using the *propertyResolverStrategy(strategy)* method on _DefaultMapperFactory.Builder_, you can provide your own custom implementation of this. 
 
 The default, which is the *ma.glasnost.orika.property.IntrospectorPropertyResolver*, is based on discovery of "properties" based on the JavaBeans specification, with a few modifications including recognition of public fields, and allowing for Boolean with the same 'isX' (as is valid for boolean).
 
-h4. Code generation strategy
+One such example provided with Orika is the *_ma.glasnost.orika.property.RegexPropertyResolver_* which allows you to specify regular expressions used to resolve the _getter_ and _setter_ methods for a particular property name; this _PropertyResolverStrategy_ could be used if you have getter and setter names which do not conform to the JavaBeans standard.
 
-You may even wish to control how the source code is generated for mapping particular field types from one class to another; you can override how existing types are mapped, remove support for some types, add support for new types, or even change the order in which the code generation _Specification_ instances are resolved.
+For example, suppose that your getter methods were named like _'readTheXXXProperty'_, and your setter methods were named like _'writeTheXXXProperty'_; a RegexPropertyResolver could be registered to read these properties using the following code snippet:
+
+<pre class="prettyprint">
+MapperFactory factory = 
+                new DefaultMapperFactory.Builder()
+                    .propertyResolverStrategy(
+                            new RegexPropertyResolver(
+                                    "readThe([\\w]+)Property",
+                                    "writeThe([\\w]+)Property",
+                                    true, true))
+                    .build();
+</pre>
+
+Another example is shown in the test *ma.glasnost.orika.test.extensibility.PropertyResolverExtensibilityTestCase*.
+
