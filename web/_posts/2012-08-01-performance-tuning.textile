@@ -5,8 +5,6 @@ title: Performance Tuning
 desc: recommendations for optimal performance
 ---
 
-h2. Overview
-
 Orika uses a code generation to produce mappers which are as fast as possible; it also attempts to cache "strategies" used to map a given set of inputs so that the path to map a particular type doesn't have to be resolved again for each mapping request. Even with these measures taken, there are still some cases where the mapping overhead can be expensive, depending on the size of the object graph you're trying to map. But there are some things which can be done to reduce some of the overhead.
 
 h4. Use the MapperFactory as a singleton
@@ -15,11 +13,11 @@ One of the *most* expensive pieces of Orika is the instantiation and initializat
 
 h4. Cache instances of the Type<?> class
 
-If you need to use the special *ma.glasnost.orika.metadata.Type* class to represent generic types in your mapping, consider storing the types you need and reusing them, rather than constructing them for each mapping request.
+If you need to use the special <code class="type">ma.glasnost.orika.metadata.Type</code> class to represent generic types in your mapping, consider storing the types you need and reusing them, rather than constructing them for each mapping request.
 
 h4. Use BoundMapperFacade to avoid repeated lookup of mapping strategy
 
-If you're primarily concerned with the mapping of a particular type to another, you can avoid the overhead of looking up an appropriate mapping strategy for your set of inputs by constructing a *BoundMapperFacade<A,B>* for a given pair of types, by using the *getMapperFacade(typeA, typeB)* method on MapperFactory, like so:
+If you're primarily concerned with the mapping of a particular type to another, you can avoid the overhead of looking up an appropriate mapping strategy for your set of inputs by constructing a <code>BoundMapperFacade<A,B></code> for a given pair of types, by using the <code>getMapperFacade(typeA, typeB)</code> method on MapperFactory, like so:
 
 <pre class="prettyprint">
 BoundMapperFacade<Person,PersonDto> mapper = mapperFactory.getMapperFacade(Person.class, PersonDto.class);

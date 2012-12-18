@@ -48,7 +48,7 @@ mapperFactory.classMap(BasicPerson.class, BasicPersonDto.class)
 
 In this example, we've set the default for this ClassMap to _not_ map nulls (in either direction), but for the mapping of 'field1' to 'fieldOne' (in both directions), we specified that null values _should_ be mapped.
 
-
+----
 
 h4. Customizing individual ClassMaps
 
@@ -68,6 +68,7 @@ mapperFactory.classMap(Source.class, Destination.class)
     .register();
 </pre>
 
+----
 
 h4. Customized ClassMapBuilder
 
@@ -82,6 +83,8 @@ MapperFactory factory = new DefaultMapperFactory.Builder()
 </pre>
 
 _Note that we've registered the Factory for this class; review the source for this class to see how you could provide your own alternative_
+
+----
 
 h2. Ad-hoc/in-line property definitions
 
@@ -158,6 +161,8 @@ factory.classMap(Element.class, Person.class)
     .register();
 </pre>
 
+----
+
 h4. Defining properties with Property.Builder
 
 Properties can also be defined in a more programmatic way, using the _Property.Builder_ API, as seen in the following example:
@@ -169,7 +174,9 @@ Property.Builder.propertyFor(Element.class, "employment")
     .setter("setAttribute(\"employment\", %s)");
 </pre>
 
-h2. Customizing the PropertyResolverStrategy
+----
+
+h4. Customizing the PropertyResolverStrategy
 
 In case you have many properties of the same type (say, our _Element_ class), a custom PropertyResolverStrategy can be defined which automatically injects an inline definition matching our custom type in the case that the normal property lookup has failed. The definition is shown below:
 

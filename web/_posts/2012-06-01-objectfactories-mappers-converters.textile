@@ -8,11 +8,11 @@ desc: when to choose one over the others
 h3. What's the difference?
 
 <div class="alert-box alert alert-info">
-<h4>ObjectFactory <small>instantiates objects.</small></h4>
+<h4>ObjectFactory</h4>instantiates objects.
 
-<h4>Mapper <small>copies the properties from one object onto another.</small></h4>
+<h4>Mapper</h4>copies the properties from one object onto another.
 
-<h4>Converter <small>combines both _ObjectFactory_ and _Mapper_ together, returning a new instance of the destination type with all properties copied from the source instance</small></h4>.
+<h4>Converter</h4>combines both _ObjectFactory_ and _Mapper_ together, returning a new instance of the destination type with all properties copied from the source instance.
 </div>
 
 h3. When to use a Converter
