@@ -46,11 +46,11 @@
 			  	  <li><a href="index.html">Home</a></li>
 	            {% if page.previous.url %}
 	              <li><a>|</a>
-	              <li><a href="{{ page.previous.url }}">&laquo; Previous</a></li>
+	              <li><a href=".{{ page.previous.url }}">&laquo; Previous</a></li>
 	            {% endif %}
 	               <li><a>|</a>
 	            {% if page.next.url %}
-	              <li><a href="{{ page.next.url  }}">Next &raquo;</a></li>
+	              <li><a href=".{{ page.next.url  }}">Next &raquo;</a></li>
 	            {% endif %}
 	          </ul>
 		    </div>
