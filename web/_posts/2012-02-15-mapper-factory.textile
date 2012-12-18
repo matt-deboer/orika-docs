@@ -1,0 +1,71 @@
+---
+layout: post
+id: mapper-factory
+title: MapperFactory Configuration
+desc: settings to customize default mapping behavior
+---
+
+h4. Constructing the DefaultMapperFactory
+
+The central focal point of Orika is the MapperFactory, of which DefaultMapperFactory is the provided implementation. DefaultMapperFactory is constructed using a flent-style builder API, like so:
+
+<pre class="prettyprint">
+MapperFactory mapperFactory = new DefaultMapperFactory.Builder().build();
+</pre>
+
+h4. Configuring the DefaultMapperFactory via it's Builder
+
+There are various methods available on the _Builder_ which can be used to fine-tune the default behavior of Orika, and we will cover some of most interesting ones below:
+
+h5. Customize how Orika resolves Constructors for mapped objects:
+
+Provide your own implementation of _ConstructorResolverStrategy_ to take over this behavior, or just extend the default *ma.glasnost.orika.constructor.SimpleConstructorResolverStrategy*: 
+
+<pre class="prettyprint">
+constructorResolverStrategy(ConstructorResolverStrategy constructorResolverStrategy);
+</pre>
+
+h5. Customize how Orika compiles its generated source code
+
+Provide your own implementation of _CompilerStrategy_ to take over this behavior, or just extend the default <code>ma.glasnost.orika.impl.generator.JavassistCompilerStrategy</code>.
+
+You can also use an alternative provided with Orika, <code>ma.glasnost.orika.impl.generator.EclipseJdtCompilerStrategy</code> which is helpful for step-debugging generated mapper code; more information about this alternative is described in the troubleshooting and debugging page.
+
+<pre class="prettyprint">
+compilerStrategy(CompilerStrategy compilerStrategy);
+</pre>
+
+h5. Customize how Orika resolved properties 
+
+Provide your own implementation of PropertyResolverStrategy to take over this behavior, or just extend the default <code>ma.glasnost.orika.property.IntrospectorPropertyResolver</code>.
+
+<pre class="prettyprint">
+propertyResolverStrategy(PropertyResolverStrategy propertyResolverStrategy);
+</pre>
+
+h5. Customize how Orika builds ClassMaps
+
+Provide your own implementation of ClassMapBuilderFactory to take over this behavior, or just extend the default <code>ma.glasnost.orika.metadata.ClassMapBuilder.Factory</code>.
+
+You can also use an alternative provided with Orika, <code>ma.glasnost.orika.metadata.ScoringClassMapBuilder.Factory</code> which uses a word-scoring algorithm to determine a best-fit matching of the fields for a pair of types; it even attempts to auto-resolve matches down to the nested properties and multi-occurrence elements.
+	
+<pre class="prettyprint">
+classMapBuilderFactory(ClassMapBuilderFactory classMapBuilderFactory);
+</pre>
+
+h5. Customize whether Orika will use auto-mapping
+
+You can configure whether or not Orika will perform auto-mapping at runtime for types that were not registered; this behavior is _enabled_ by default, but it can be disabled for cases where you want to be absolutely explicit about all classes that are mapped.
+
+<pre class="prettyprint">
+useAutoMapping(boolean useAutoMapping);
+</pre>
+
+
+h5. Customize whether Orika will map null values from source to destination
+
+You can configure whether or not Orika will map null values from the source to destination. This behavior is _enabled_ by default, but it can be disabled for cases where you want to leave the destination properties untouched if the source property contains a null value.
+
+<pre class="prettyprint">
+mapNulls(boolean mapNulls);
+</pre>

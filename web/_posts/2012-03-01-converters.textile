@@ -1,0 +1,74 @@
+---
+layout: post
+id: converters
+title: Custom Converters
+desc: explicitly defining conversion from one type to another
+---
+
+h3. Custom Converters
+
+Although Orika has built-in mapping and converters for many cases by default, it may happen that you have a mapping
+use-case which is not supported out of the box. Custom Converters provide one method to resolve this. The simplest way to define your own converter is to extend from <code>ma.glasnost.orika.CustomConverter<A,B></code>, as in the following example:
+
+<pre class="prettyprint">
+public class MyConverter extends CustomConverter<Date,MyDate> {
+   public MyDate convert(Date source, Type<? extends MyDate> destinationType) {
+      // return a new instance of destinationType with all properties filled
+   }
+}
+</pre>
+
+A converter is normally defined to handle a single-directional mapping. If you want to control the mapping between two types in both directions, a bi-directional converter is what you need.
+
+h3. Bi-directional Converters
+
+Bi-directional converters are used to define conversion in both directions between a given set of types. A custom bi-directional converter may be defined by extending from <code>ma.glasnost.orika.converter.BidirectionalConverter<A,B></code>, like so:
+
+<pre class="prettyprint">
+public class MyConverter extends BidirectionalConverter<Date,MyDate> {
+
+   public MyDate convertTo(Date source, Type<MyDate> destinationType) {
+      // convert in one direction
+   }
+
+   public Date convertFrom(Timestamp source, Type<Date> destinationType) {
+      // convert in the other direction
+   }
+}
+</pre>
+
+h3. Registering Converters Globally (by converted types)
+
+In order for converters to be recognized and used in mapping operations, they must be registered with a ConverterFactory (which is associated with the MapperFactory). There are two ways to register a converter with the converter factory; one registers the converter at a global level, like so:
+
+<pre class="prettyprint">
+ConverterFactory converterFactory = mapperFactory.getConverterFactory();
+converterFactory.registerConverter(new MyConverter());
+</pre>
+
+Converters registered at a *global level* will be eligible to be used whenever the source and destination types are compatible with the types defined by the converter. 
+A more technical description of the process to determine whether a converter will be used is as follows:
+# Converters are ordered so that the more specific (in terms of class hierarchy) are tested before the more generic.
+# The first in this ordering which answers <code>true</code> to the <code>canConvert(Type<?> sourceType, Type<?> destinationType)</code> method will be used to convert the types
+
+h3. Registering Converters at a Field Level
+
+Converters can also be registered at a *field level*; for cases where you don't necessarily want a converter to act upon every instance of a particular pair of types. To register a converter for use at a field level, the first step is to pass in a converter id (String) with the registration method, like so:
+
+<pre class="prettyprint">
+ConverterFactory converterFactory = mapperFactory.getConverterFactory();
+converterFactory.registerConverter("myConverterIdValue", new MyConverter());
+</pre>
+
+That converter id can then be specifically applied to any field mapping(s), like so:
+
+<pre class="prettyprint">
+mapperFactory.classMap( Source.class, Destination.class )
+   .fieldMap("sourceField1", "sourceField2").converter("myConverterIdValue").add()
+   ...
+   .register();
+</pre>
+
+h3. Using MapperFacade functions within a Custom Converter
+
+There may be cases within your own custom converters where you want to make use of the MapperFacade to map nested properties of the converted types. A protected variable <code>mapperFacade</code> is available within your custom mapper should you need to make use of it.

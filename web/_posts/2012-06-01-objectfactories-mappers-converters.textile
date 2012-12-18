@@ -1,0 +1,40 @@
+---
+layout: post
+id: objectfactories-mappers-converters
+title: Converts, Mappers, and ObjctFactories
+desc: when to choose one over the others
+---
+
+h3. What's the difference?
+
+<div class="alert-box alert alert-info">
+<h4>ObjectFactory</h4>instantiates objects.
+
+<h4>Mapper</h4>copies the properties from one object onto another.
+
+<h4>Converter</h4>combines both _ObjectFactory_ and _Mapper_ together, returning a new instance of the destination type with all properties copied from the source instance.
+</div>
+
+h3. When to use a Converter
+
+It makes sense to use a Converter for most cases where you find that Orika doesn't handle mapping an instance of a source object into a specific destination type. A custom converter (defined by extending *CustomConverter<A,B>*) returns a new, fully mapped instance of a specific destination type from a source type instance. Use this for cases where you want to completely customize the process of mapping from one object to a new instance of another type, and the default mapping behavior configured via the ClassMapBuilder API doesn't suit your purposes.
+
+Note that when you extend _CustomConverter_, your extension class will have access to the current MapperFacade via a protected *mapperFacade* variable, which you can use to map nested members of a given object.
+
+h3. When to use a Mapper
+
+Similar to a custom converter, a custom mapper (defined by extending *CustomMapper<A,B>*) can be used to explicitly control how properties of one object instance are copied to another (already existing) object instance. Use this for cases where the default mapping behavior configured via the ClassMapBuilder API doesn't suit your purposes.
+
+Note that Mappers (in the world of Orika) copy properties from one object instance to another -- and they expect that the destination instance already exists; if you want to control how the destination object is instantiated, or which instance is returned, use a _CustomConverter_ or _ObjectFactory_ which both return an instance.
+
+Note that when you extend _CustomMapper_, your extension class will have access to the current MapperFacade via a protected *mapperFacade* variable, which you can use to map nested members of a given object.
+
+h3. When to use an ObjectFactory
+
+It makes most sense to define a custom *ObjectFactory<T>* when there's a special way that your destination
+object needs to be instantiated (other than through a normal constructor call), or if Orika doesn't seem
+to use the constructor you expected when creating your object.
+
+Note that when you extend _CustomMapper_, your extension class will have access to the current MapperFacade via a protected *mapperFacade* variable, which you can use to map nested members of a given object.
+
+ 

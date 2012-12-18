@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Orika User Guide - {{ page.title }}</title>
+    <meta name="description" content="">
+    <meta name="author" content="Orika authors">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+<script src="js/jquery.js"></script>
+<script src="js/prettify.js"></script>
+<script>
+	  !function ($) {
+	    $(function(){
+	      window.prettyPrint && prettyPrint()   
+	    })
+	  }(window.jQuery)
+</script>      
+<link rel="stylesheet" href="css/bootstrap.min.css">
+<link rel="stylesheet" href="css/prettify.css">
+<link rel="stylesheet" href="css/custom.css">
+  
+
+  </head>
+
+  <body>
+  
+    <div class="navbar navbar-fixed-top">
+     	<div class="navbar-inner">
+	 
+		    <div class="container">
+			  <a class="brand" href="index.html">Orika User Guide</a>
+		      <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+		      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+		        <span class="icon-bar"></span>
+		        <span class="icon-bar"></span>
+		        <span class="icon-bar"></span>
+		      </a>
+
+			  <ul class="nav">
+			  	  <li><a href="index.html">Home</a></li>
+	            {% if page.previous.url %}
+	              <li><a>|</a>
+	              <li><a href="{{ page.previous.url }}">&laquo; Previous</a></li>
+	            {% endif %}
+	               <li><a>|</a>
+	            {% if page.next.url %}
+	              <li><a href="{{ page.next.url  }}">Next &raquo;</a></li>
+	            {% endif %}
+	          </ul>
+		    </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="container" style="padding-top: 60px;">
+	    <div class="page-header">
+	  		<h1>{{ page.title }} <br><small style="padding-left:3em; font-style:italic;">{{ page.desc }}</small></h1>
+		</div>
+      {{ content }}
+    </div> <!-- /container -->
+
+    <div id="footer">
+      <div class="inner">
+        <div class="container">
+          	<p>
+	            Licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache License v2.0</a>.
+	          </p>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

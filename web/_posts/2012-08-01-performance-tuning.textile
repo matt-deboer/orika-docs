@@ -1,0 +1,44 @@
+---
+layout: post
+id: perf
+title: Performance Tuning
+desc: recommendations for optimal performance
+---
+
+Orika uses a code generation to produce mappers which are as fast as possible; it also attempts to cache "strategies" used to map a given set of inputs so that the path to map a particular type doesn't have to be resolved again for each mapping request. Even with these measures taken, there are still some cases where the mapping overhead can be expensive, depending on the size of the object graph you're trying to map. But there are some things which can be done to reduce some of the overhead.
+
+h4. Use the MapperFactory as a singleton
+
+One of the *most* expensive pieces of Orika is the instantiation and initialization of the MapperFactory, and the MapperFacade which is obtained from it. The MapperFactory and MapperFacade are thread-safe objects which can safely be shared as singletons within your own code.
+
+h4. Cache instances of the Type<?> class
+
+If you need to use the special <code class="type">ma.glasnost.orika.metadata.Type</code> class to represent generic types in your mapping, consider storing the types you need and reusing them, rather than constructing them for each mapping request.
+
+h4. Use BoundMapperFacade to avoid repeated lookup of mapping strategy
+
+If you're primarily concerned with the mapping of a particular type to another, you can avoid the overhead of looking up an appropriate mapping strategy for your set of inputs by constructing a <code>BoundMapperFacade<A,B></code> for a given pair of types, by using the <code>getMapperFacade(typeA, typeB)</code> method on MapperFactory, like so:
+
+<pre class="prettyprint">
+BoundMapperFacade<Person,PersonDto> mapper = mapperFactory.getMapperFacade(Person.class, PersonDto.class);
+
+public toDto(Person person) {
+   return mapper.map(person);
+}
+</pre>
+
+_Note that Orika makes use of BoundMapperFacade within it's generated Mapper and ObjectFactory code to avoid extra lookups on recursive mapping calls._
+
+h4. Use a custom BoundMapperFacade when your object graph has no cycles
+
+One of the most expensive portions of the mapping process is the hash lookup within a given MappingContext for an object that has already been mapped; this is necessary to avoid infinite recursion in those cases where your object graph has cycles (e.g., parent references it's child, which references it's parent).
+
+In the case where you know there are no cycles in the object graph, you can significantly speed up the mapping process by avoiding this lookup. To construct a non-cyclic verson of BoundMapperFacade, use the *getMapperFacade(typeA, TypeB, false)* method on MapperFactory (the third argument is a boolean, specifying whether the object graph contains cycles), like so:
+
+<pre class="prettyprint">
+BoundMapperFacade<Person,PersonDto> mapper = mapperFactory.getMapperFacade(Person.class, PersonDto.class, false);
+
+public toDto(Person person) {
+   return mapper.map(person);
+}
+</pre>
