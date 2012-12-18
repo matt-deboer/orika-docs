@@ -1,4 +1,4 @@
-source: ./web
+source: .
 destination: ./_site
 google_prettify: true
 permalink: none
