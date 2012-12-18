@@ -1,0 +1,9 @@
+# /
+/.settings/.*
+
+# /_site/
+/_site/*
+
+
+
+
